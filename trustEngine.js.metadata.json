@@ -1,0 +1,5 @@
+{
+  "summary": "Updated trustEngine.js with bank account prefix detection (SBI 058, HDFC, ICICI, Axis, PNB), graduated PIN failure penalties, and 5-attempt lockout state.",
+  "updatedAt": "2026-09-07T10:36:13.626331600Z",
+  "userFacing": true
+}

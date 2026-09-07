@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment 4.0 // Continuous Trust Authentication</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    // If opened directly via file://, automatically switch to http://localhost:8080 to enable Windows Hello biometrics
+    if (window.location.protocol === 'file:') {
+      fetch('http://localhost:8080/index.html', { method: 'HEAD', mode: 'no-cors' })
+        .then(function() {
+          window.location.replace('http://localhost:8080/index.html');
+        })
+        .catch(function(e) {
+          console.warn('Local HTTP server not reachable from file://, staying on file context');
+        });
+    }
+  </script>
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-logo">
+        <span class="shield-icon">🛡️</span>
+      </div>
+      <div>
+        <div class="brand-title">PROJECT KERBEROS <span class="badge-ps">PS01 · DIGITAL FRONTIER</span></div>
+        <div class="brand-sub">Payment 4.0: Next-Gen Zero-Trust Mobile UPI Prototype</div>
+      </div>
+    </div>
+    <div class="nav-meta">
+      <span class="status-pill live-pill"><span class="pulse-dot"></span> TRUST ENGINE ACTIVE</span>
+      <span class="status-pill mode-pill">TEAM AxixLi</span>
+      <button id="btnGlobalReset" class="btn-reset" title="Reset Prototype State">↺ Reset App</button>
+    </div>
+  </header>
+
+  <!-- Main Centered Emulator Stage -->
+  <main class="main-container minimal-stage">
+    
+    <div class="phone-frame" id="phoneContainer">
+      <!-- Phone Speaker & Camera Notch -->
+      <div class="phone-notch">
+        <div class="speaker"></div>
+        <div class="camera-lens"></div>
+      </div>
+
+      <!-- Phone Status Bar -->
+      <div class="phone-status">
+        <span id="phoneClock">09:41</span>
+        <div class="status-icons">
+          <span>5G</span>
+          <span>📶</span>
+          <span>100% 🔋</span>
+        </div>
+      </div>
+
+      <!-- Phone Dynamic Screen Container -->
+      <div class="phone-screen">
+        
+        <!-- VIEW 0: UPI APP HOME DASHBOARD -->
+        <div id="stepHome" class="app-step active-step">
+          <!-- App Top Header -->
+          <div class="upi-header">
+            <div class="user-profile">
+              <div class="avatar-circle">AR</div>
+              <div class="user-meta">
+                <h4>Alex Rivera</h4>
+                <p class="user-vpa">alex@axisbank · Axis Bank ··4821</p>
+              </div>
+            </div>
+            <div class="header-actions">
+              <button class="icon-btn" title="Notifications">🔔</button>
+              <button class="icon-btn shield-badge-btn" id="btnQuickTrust" title="Open In-App Security Center">🛡️</button>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="upi-search-box" id="btnSearchTrigger">
+            <span class="search-icon">🔍</span>
+            <span class="search-placeholder">Pay anyone by name, phone or UPI ID</span>
+          </div>
+
+          <!-- 5 Quick Payment Actions Grid -->
+          <div class="actions-grid five-grid">
+            <div class="action-item" id="btnActionScan">
+              <div class="action-icon-circle icon-cyan">📷</div>
+              <span>Scan QR</span>
+            </div>
+            <div class="action-item" id="btnActionContact">
+              <div class="action-icon-circle icon-green">📱</div>
+              <span>To Contact</span>
+            </div>
+            <div class="action-item" id="btnActionUpiId">
+              <div class="action-icon-circle icon-purple">🆔</div>
+              <span>To UPI ID</span>
+            </div>
+            <div class="action-item" id="btnActionBank">
+              <div class="action-icon-circle icon-blue">🏦</div>
+              <span>To Bank A/c</span>
+            </div>
+            <div class="action-item" id="btnActionBalance">
+              <div class="action-icon-circle icon-yellow">💳</div>
+              <span>Check Bal</span>
+            </div>
+          </div>
+
+          <!-- In-App Security Banner (Clickable to open In-App Trust Center) -->
+          <div class="home-security-banner" id="bannerOpenTrustCenter">
+            <div class="sec-banner-left">
+              <div class="sec-shield-anim">🛡️</div>
+              <div>
+                <strong>Kerberos Zero-Trust Guard</strong>
+                <span id="homeTrustStatus">Protected · Trust Score: 97/100</span>
+              </div>
+            </div>
+            <span class="badge-active">VIEW ➔</span>
+          </div>
+
+          <!-- People / Recent Payees Carousel -->
+          <div class="section-title-row">
+            <h4>People & Frequent Payees</h4>
+            <span class="link-sub" id="btnViewAllContacts">View All</span>
+          </div>
+
+          <div class="contacts-carousel">
+            <div class="contact-pill-item" data-name="Rahul Sharma" data-vpa="rahul@okhdfcbank" data-type="CONTACT_TRUSTED">
+              <div class="contact-avatar av-blue">RS</div>
+              <span>Rahul</span>
+            </div>
+            <div class="contact-pill-item" data-name="Priya Singh" data-vpa="priya@oksbi" data-type="CONTACT_TRUSTED">
+              <div class="contact-avatar av-pink">PS</div>
+              <span>Priya</span>
+            </div>
+            <div class="contact-pill-item" data-name="Amit Patel" data-vpa="amit@icici" data-type="CONTACT_TRUSTED">
+              <div class="contact-avatar av-green">AP</div>
+              <span>Amit</span>
+            </div>
+            <div class="contact-pill-item" data-name="Ramesh Tea Stall" data-vpa="ramesh.tea@upi" data-type="QR_COUNTER">
+              <div class="contact-avatar av-orange">🏪</div>
+              <span>Ramesh</span>
+            </div>
+            <div class="contact-pill-item warning-pill-item" data-name="FastCash Loans (Unknown)" data-vpa="fastcash99@muleupi" data-type="CONTACT_UNKNOWN">
+              <div class="contact-avatar av-red">⚠️</div>
+              <span>Unknown</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- VIEW 1: MANUAL BANK TRANSFER (WITH AUTO BANK DETECTION) -->
+        <div id="stepBankTransfer" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" data-back="stepHome">← Home</button>
+            <h3>Transfer to Bank Account</h3>
+            <p>System automatically detects beneficiary bank from account prefix</p>
+          </div>
+
+          <div class="bank-form-card">
+            <div class="form-group">
+              <label>Beneficiary Account Number</label>
+              <div class="input-with-icon">
+                <input type="text" id="inputBankAccNumber" placeholder="e.g. 05863829474 (SBI), 501..., 910..." />
+                <span class="input-tag" id="accPrefixTag">Prefix</span>
+              </div>
+            </div>
+
+            <!-- Live Auto-Detected Bank Banner -->
+            <div class="detected-bank-pill" id="detectedBankBanner">
+              <div class="bank-logo-icon" id="detectedBankLogo">🏦</div>
+              <div class="detected-bank-info">
+                <strong id="detectedBankName">Type account number to detect bank</strong>
+                <span id="detectedBankSub">SBI: 058... | HDFC: 501... | ICICI: 0004... | Axis: 910...</span>
+              </div>
+              <span class="verified-indicator" id="detectedBankBadge">AUTO-DETECT</span>
+            </div>
+
+            <div class="form-group">
+              <label>Re-enter Account Number</label>
+              <input type="text" id="inputBankAccConfirm" placeholder="Re-enter to verify" />
+            </div>
+
+            <div class="form-group">
+              <label>IFSC Code</label>
+              <div class="input-with-icon">
+                <input type="text" id="inputBankIfsc" placeholder="e.g. SBIN0001234" />
+                <span class="ifsc-status-pill" id="ifscStatusPill">Auto-Suggest</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Account Holder Name</label>
+              <input type="text" id="inputBankBeneficiaryName" placeholder="Enter recipient's full name" value="Vikas Kumar" />
+            </div>
+
+            <button id="btnProceedBankTransfer" class="btn-primary">
+              <span>Confirm Bank & Amount</span> →
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 2: CONTACT / UPI ID DIRECTORY PICKER -->
+        <div id="stepContactPicker" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" data-back="stepHome">← Home</button>
+            <h3>Pay to Contact or UPI ID</h3>
+            <p>Select a contact or enter any mobile number / VPA</p>
+          </div>
+
+          <div class="search-input-field">
+            <span>🔍</span>
+            <input type="text" id="contactSearchInput" placeholder="Enter mobile number or UPI ID" />
+          </div>
+
+          <div class="contacts-directory-list">
+            <div class="directory-group-label">FREQUENT CONTACTS</div>
+
+            <div class="directory-item" data-name="Rahul Sharma" data-vpa="rahul@okhdfcbank" data-type="CONTACT_TRUSTED" data-phone="+91 98765 43210">
+              <div class="directory-avatar av-blue">RS</div>
+              <div class="directory-info">
+                <h4>Rahul Sharma</h4>
+                <p>+91 98765 43210 · rahul@okhdfcbank</p>
+              </div>
+              <span class="trust-indicator-badge green">Verified</span>
+            </div>
+
+            <div class="directory-item" data-name="Priya Singh" data-vpa="priya@oksbi" data-type="CONTACT_TRUSTED" data-phone="+91 91234 56789">
+              <div class="directory-avatar av-pink">PS</div>
+              <div class="directory-info">
+                <h4>Priya Singh</h4>
+                <p>+91 91234 56789 · priya@oksbi</p>
+              </div>
+              <span class="trust-indicator-badge green">Verified</span>
+            </div>
+
+            <div class="directory-item" data-name="Amit Patel" data-vpa="amit@icici" data-type="CONTACT_TRUSTED" data-phone="+91 99887 76655">
+              <div class="directory-avatar av-green">AP</div>
+              <div class="directory-info">
+                <h4>Amit Patel</h4>
+                <p>+91 99887 76655 · amit@icici</p>
+              </div>
+              <span class="trust-indicator-badge green">Verified</span>
+            </div>
+
+            <div class="directory-group-label">TEST UNKNOWN / SUSPICIOUS PAYEE</div>
+
+            <div class="directory-item warning-dir-item" data-name="FastCash 99 (Suspicious)" data-vpa="fastcash99@muleupi" data-type="CONTACT_UNKNOWN" data-phone="+91 88001 12233">
+              <div class="directory-avatar av-red">⚠️</div>
+              <div class="directory-info">
+                <h4>FastCash 99 (Unverified)</h4>
+                <p>fastcash99@muleupi · Account Age: 2 days</p>
+              </div>
+              <span class="trust-indicator-badge yellow">Step-Up</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 3: CHECK BANK BALANCE & PASSBOOK STATEMENT -->
+        <div id="stepBalance" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" data-back="stepHome">← Home</button>
+            <h3>Account Balance & Passbook</h3>
+            <p>Axis Bank · Savings Account ··4821</p>
+          </div>
+
+          <div class="balance-card">
+            <div class="bank-logo-row">
+              <span class="bank-title">AXIS BANK</span>
+              <span class="ac-type">PRIMARY A/C</span>
+            </div>
+
+            <div class="balance-amount-display" id="balanceAmountText">
+              <span class="currency-tag">₹</span>
+              <span class="balance-val">••,•••.••</span>
+            </div>
+
+            <p class="balance-status-desc" id="balanceStatusDesc">
+              Biometric & MPIN verification required to unlock balance
+            </p>
+
+            <div class="balance-btn-wrap">
+              <button id="btnUnlockBalance" class="btn-primary">
+                <span>Verify to View Balance</span> 🔒
+              </button>
+            </div>
+          </div>
+
+          <!-- Integrated Passbook & Transaction Statement -->
+          <div class="balance-history-section">
+            <div class="section-title-row">
+              <h4>Account Passbook & Transactions</h4>
+              <span class="history-count-badge" id="historyCountBadge">3 Recent</span>
+            </div>
+
+            <div class="history-list" id="fullHistoryList">
+              <div class="history-item">
+                <div class="history-left">
+                  <div class="history-icon">🏪</div>
+                  <div>
+                    <h4>Ramesh Tea Stall</h4>
+                    <p>Today, 08:30 AM · In-Store QR</p>
+                    <span class="history-score-tag green">Trust: 97/100 · Enclave Signed</span>
+                  </div>
+                </div>
+                <div class="history-right debit">- ₹40.00</div>
+              </div>
+
+              <div class="history-item">
+                <div class="history-left">
+                  <div class="history-icon">🍔</div>
+                  <div>
+                    <h4>Swiggy Online</h4>
+                    <p>Yesterday, 09:15 PM · In-App Payment</p>
+                    <span class="history-score-tag green">Trust: 95/100 · Nonce Verified</span>
+                  </div>
+                </div>
+                <div class="history-right debit">- ₹480.00</div>
+              </div>
+
+              <div class="history-item">
+                <div class="history-left">
+                  <div class="history-icon">👤</div>
+                  <div>
+                    <h4>Rahul Sharma</h4>
+                    <p>05 Sep 2026, 02:10 PM · P2P Contact</p>
+                    <span class="history-score-tag green">Trust: 98/100 · Trusted Peer</span>
+                  </div>
+                </div>
+                <div class="history-right credit">+ ₹1,200.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="balance-security-note">
+            <strong>🛡️ Kerberos Duress Protection:</strong>
+            <span>Entering the Reverse MPIN (<strong>9284</strong>) will show a fake network timeout to an extortionist while silently dispatching an SOS distress beacon!</span>
+          </div>
+        </div>
+
+        <!-- VIEW 5: IN-APP SECURITY & TRUST CENTER (EMBEDDED INSIDE APP) -->
+        <div id="stepSecurity" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" data-back="stepHome">← Home</button>
+            <h3>Security & Trust Center</h3>
+            <p>Autonomous Zero-Trust Device & Account Protection</p>
+          </div>
+
+          <!-- In-App Trust Gauge Box -->
+          <div class="inapp-trust-box">
+            <div class="inapp-gauge-row">
+              <div class="gauge-wrapper inapp-gauge">
+                <svg class="gauge-svg" viewBox="0 0 200 120">
+                  <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" />
+                  <path class="gauge-fill" id="gaugeFill" d="M 20 100 A 80 80 0 0 1 180 100" />
+                </svg>
+                <div class="gauge-center-text">
+                  <span id="scoreValue">97</span>
+                  <span class="gauge-unit">/ 100</span>
+                </div>
+              </div>
+              <div class="inapp-trust-meta">
+                <div class="verdict-pill" id="verdictBadge">APPROVE (LOW RISK)</div>
+                <div class="inapp-status-txt" id="telemetryStateText">Natural Cursor & Touch Jitter Active</div>
+              </div>
+            </div>
+
+            <!-- 4 Signal Breakdown Bars (Compact Mobile UI) -->
+            <div class="inapp-signals-list">
+              <div class="inapp-signal-row">
+                <div class="signal-name"><span>👤 Person (Behavioral)</span><strong id="scorePerson">24/25</strong></div>
+                <div class="signal-bar-track"><div class="signal-bar-fill green-bar" id="barPerson" style="width: 96%;"></div></div>
+                <span class="signal-sub-desc" id="descPerson">Biometric Liveness & Cadence Match</span>
+              </div>
+
+              <div class="inapp-signal-row">
+                <div class="signal-name"><span>🛡️ Device Integrity</span><strong id="scoreDevice">25/25</strong></div>
+                <div class="signal-bar-track"><div class="signal-bar-fill green-bar" id="barDevice" style="width: 100%;"></div></div>
+                <span class="signal-sub-desc" id="descDevice">Secure Enclave Sealed · No Screen Mirroring</span>
+              </div>
+
+              <div class="inapp-signal-row">
+                <div class="signal-name"><span>📍 Context & Geofence</span><strong id="scoreContext">24/25</strong></div>
+                <div class="signal-bar-track"><div class="signal-bar-fill green-bar" id="barContext" style="width: 96%;"></div></div>
+                <span class="signal-sub-desc" id="descContext">Physical Location Matched</span>
+              </div>
+
+              <div class="inapp-signal-row">
+                <div class="signal-name"><span>🔐 Intent & Nonce</span><strong id="scoreIntent">24/25</strong></div>
+                <div class="signal-bar-track"><div class="signal-bar-fill green-bar" id="barIntent" style="width: 96%;"></div></div>
+                <span class="signal-sub-desc" id="descIntent">Amount Baseline Normal · Fresh Nonce</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hackathon Threat Simulation Lab (Collapsible for Demonstrations) -->
+          <div class="inapp-threat-lab">
+            <div class="threat-lab-header" id="btnToggleThreatCollapse">
+              <span>⚡ Mentor Attack Simulation Lab</span>
+              <span id="threatCollapseIcon">▼</span>
+            </div>
+
+            <div class="threat-lab-content" id="threatLabContent">
+              <div class="inapp-threat-switch-row">
+                <div><strong>🦹 Fake QR Sticker (Geofence Mismatch)</strong><span>Pasted Gurgaon sticker in Chennai</span></div>
+                <label class="switch"><input type="checkbox" id="toggleThreatQR"><span class="slider"></span></label>
+              </div>
+
+              <div class="inapp-threat-switch-row">
+                <div><strong>📱 Screen Mirroring / RAT</strong><span>AnyDesk/overlay scraper active</span></div>
+                <label class="switch"><input type="checkbox" id="toggleThreatScreen"><span class="slider"></span></label>
+              </div>
+
+              <div class="inapp-threat-switch-row">
+                <div><strong>🕵️ Stolen Phone (Cadence Anomaly)</strong><span>Irregular typing rhythm injected</span></div>
+                <label class="switch"><input type="checkbox" id="toggleThreatCadence"><span class="slider"></span></label>
+              </div>
+
+              <div class="inapp-threat-switch-row">
+                <div><strong>💥 Replay Attack</strong><span>Reused cryptographic nonce</span></div>
+                <label class="switch"><input type="checkbox" id="toggleThreatReplay"><span class="slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- In-App Live Zero-Trust Audit Log -->
+          <div class="inapp-audit-box">
+            <div class="inapp-audit-title">
+              <span>📋 Live Zero-Trust Event Log</span>
+              <span class="live-pulse-dot"></span>
+            </div>
+            <div class="audit-feed-compact" id="auditFeed"></div>
+          </div>
+
+        </div>
+
+        <!-- STEP 1: Scan & Merchant Verification -->
+        <div id="stepScan" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" data-back="stepHome">← Home</button>
+            <h3>Scan & Pay</h3>
+            <p>Merchant QR Verification & Geofence Validation</p>
+          </div>
+
+          <div class="qr-selector-group">
+            <label class="qr-mode-btn active" data-mode="counter">
+              <input type="radio" name="qrMode" value="counter" checked>
+              <span>📍 In-Store Counter</span>
+            </label>
+            <label class="qr-mode-btn" data-mode="gallery">
+              <input type="radio" name="qrMode" value="gallery">
+              <span>🖼️ Friend's Gallery QR</span>
+            </label>
+            <label class="qr-mode-btn warning-tab" data-mode="tampered">
+              <input type="radio" name="qrMode" value="tampered">
+              <span>⚠️ Tampered Sticker</span>
+            </label>
+          </div>
+
+          <div class="camera-viewfinder">
+            <div class="scan-laser"></div>
+            <div class="viewfinder-corner tl"></div>
+            <div class="viewfinder-corner tr"></div>
+            <div class="viewfinder-corner bl"></div>
+            <div class="viewfinder-corner br"></div>
+            
+            <div class="qr-target-card">
+              <div class="qr-box">
+                <div class="qr-mock-matrix" id="qrMatrix"></div>
+              </div>
+              <div class="qr-readout">
+                <div id="qrVpa" class="vpa-text">ramesh.tea@upi</div>
+                <div id="qrLocation" class="loc-text">T. Nagar, Chennai (3m away)</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="geoAlertBox" class="geo-status-banner verified">
+            <span class="geo-icon">✓</span>
+            <div class="geo-info">
+              <strong>Physical Geofence Matched</strong>
+              <span>Device GPS matches merchant registered shop location (&lt;10m).</span>
+            </div>
+          </div>
+
+          <button id="btnProceedAmount" class="btn-primary">
+            <span>Confirm Payee & Amount</span> →
+          </button>
+        </div>
+
+        <!-- STEP 2: Amount & Intent Binding -->
+        <div id="stepAmount" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" id="btnBackFromAmount">← Back</button>
+            <h3>Transfer Details</h3>
+            <span class="step-sub">Step 2: Cryptographic Intent Binding</span>
+          </div>
+
+          <div class="payee-compact-card">
+            <div class="payee-avatar" id="payeeAvatarDisplay">🏪</div>
+            <div class="payee-details">
+              <h4 id="intentMerchantName">Ramesh Tea Stall</h4>
+              <p id="intentMerchantVpa">ramesh.tea@upi · Verified Merchant</p>
+            </div>
+          </div>
+
+          <div class="amount-input-box">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="inputAmount" value="250" min="1" max="100000" />
+          </div>
+
+          <div class="quick-chips">
+            <button class="chip" data-val="50">₹50</button>
+            <button class="chip active-chip" data-val="250">₹250</button>
+            <button class="chip" data-val="1000">₹1,000</button>
+            <button class="chip" data-val="50000">₹50,000 (Anomaly)</button>
+          </div>
+
+          <div class="intent-crypto-card">
+            <div class="crypto-header">
+              <span>🔐 INTENT-BOUND PAYLOAD</span>
+              <span class="crypto-badge">SHA-256</span>
+            </div>
+            <div class="crypto-payload-code" id="cryptoPayloadPreview">
+              Sign(ramesh.tea@upi | ₹250 | Nonce:0x8F4A | 13.0827,80.2707)
+            </div>
+            <div class="crypto-hash" id="cryptoHashPreview">
+              Hash: a7f89c01...d8e3
+            </div>
+          </div>
+
+          <button id="btnProceedBiometric" class="btn-primary">
+            <span>Authorize with Biometrics</span> →
+          </button>
+        </div>
+
+        <!-- STEP 3: Biometric Verification Gate -->
+        <div id="stepBiometric" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" id="btnBackFromBiometric">← Back</button>
+            <h3>Biometric Verification</h3>
+            <span class="step-sub">Step 3: Primary Hardware Gate</span>
+          </div>
+
+          <div class="biometric-stage">
+            <div class="bio-prompt" id="bioPromptText">
+              Touch your laptop's fingerprint sensor via Windows Hello to authenticate
+            </div>
+
+            <!-- Non-secure Context Notice (visible only if opened directly via file://) -->
+            <div id="bioSecureContextNotice" class="bio-secure-notice hidden">
+              <span>⚠️ Windows Hello hardware sensor requires <strong>localhost</strong> or HTTPS.</span>
+              <a href="http://localhost:8080/index.html" class="btn-switch-localhost">🚀 Open on http://localhost:8080</a>
+            </div>
+
+            <!-- Enhanced Full-Functioning Fingerprint Sensor with SVG Progress Ring -->
+            <div class="fingerprint-scan-module">
+              <svg class="bio-progress-svg" viewBox="0 0 140 140">
+                <circle class="bio-progress-track" cx="70" cy="70" r="62"></circle>
+                <circle class="bio-progress-bar" id="bioProgressBar" cx="70" cy="70" r="62"></circle>
+              </svg>
+
+              <div class="fingerprint-wrapper" id="fingerprintTarget" tabindex="0" role="button" aria-label="Fingerprint Sensor">
+                <div class="bio-sonar"></div>
+                <div class="bio-laser-sweep"></div>
+                <div class="fingerprint-glyph">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 2C6.48 2 2 6.48 2 12c0 2.85 1.2 5.41 3.12 7.24.4.38 1.03.36 1.41-.04.38-.4.36-1.03-.04-1.41C4.78 16.2 3.8 14.2 3.8 12c0-4.52 3.68-8.2 8.2-8.2s8.2 3.68 8.2 8.2c0 2.2-.98 4.2-2.69 5.79-.4.38-.42 1.01-.04 1.41.38.4 1.01.42 1.41.04C20.8 17.41 22 14.85 22 12c0-5.52-4.48-10-10-10z"/>
+                    <path d="M12 6c-3.31 0-6 2.69-6 6 0 1.66.67 3.16 1.76 4.24.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41C8.38 14.04 8 13.07 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.07-.38 2.04-1.17 2.83-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0 1.09-1.08 1.76-2.58 1.76-4.24 0-3.31-2.69-6-6-6z"/>
+                    <path d="M12 10c-1.1 0-2 .9-2 2 0 .55.22 1.05.59 1.41.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41C12.08 12.08 12.04 12.04 12 12c0-.55.45-1 1-1s1 .45 1 1c0 .04-.04.08-.08.12-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0 .37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2z"/>
+                  </svg>
+                </div>
+                <div class="bio-scan-pct" id="bioScanPct">CLICK TO SCAN</div>
+              </div>
+            </div>
+
+            <div class="bio-status" id="bioStatusText">Click sensor or button to invoke Windows Hello</div>
+
+            <div class="bio-telemetry-pill">
+              <span id="bioSensorTelemetry">System Biometrics: <strong>Ready (Windows Hello)</strong></span>
+            </div>
+
+            <!-- Native OS Biometric Trigger (Windows Hello / Touch ID) -->
+            <button type="button" id="btnNativeBio" class="btn-native-bio">
+              <span>🔐 Scan System Fingerprint (Windows Hello)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 4: MPIN Keypad with Cadence, Penalties & Lockout -->
+        <div id="stepMpin" class="app-step">
+          <div class="step-header">
+            <button class="btn-back" id="btnBackFromMpin">← Back</button>
+            <h3 id="mpinTitle">Security MPIN</h3>
+            <span class="step-sub" id="mpinSubtitle">Step 4: Final Intent Verification</span>
+          </div>
+
+          <div class="pin-attempts-strip" id="pinAttemptsStrip">
+            <div class="attempts-label">
+              <span>Failed Attempts: <strong id="pinAttemptsCount">0</strong> / 5</span>
+              <span class="attempts-warning" id="pinAttemptsWarning">All 5 attempts safe</span>
+            </div>
+            <div class="attempts-dots">
+              <span class="attempt-dot" id="attDot1"></span>
+              <span class="attempt-dot" id="attDot2"></span>
+              <span class="attempt-dot" id="attDot3"></span>
+              <span class="attempt-dot" id="attDot4"></span>
+              <span class="attempt-dot" id="attDot5"></span>
+            </div>
+          </div>
+
+          <div class="mpin-instruction-banner">
+            <div>Default Normal PIN: <strong class="code-hl">4829</strong></div>
+            <div class="duress-hint">Coercion / Duress PIN: <strong class="code-hl red-hl">9284</strong> (Reversed)</div>
+          </div>
+
+          <div class="pin-display">
+            <div class="pin-dot" id="dot0"></div>
+            <div class="pin-dot" id="dot1"></div>
+            <div class="pin-dot" id="dot2"></div>
+            <div class="pin-dot" id="dot3"></div>
+          </div>
+
+          <div class="cadence-mini-meter">
+            <div class="cadence-label">
+              <span>Keystroke Rhythm Consistency:</span>
+              <span id="cadenceVal">100%</span>
+            </div>
+            <div class="cadence-track">
+              <div class="cadence-bar" id="cadenceBar" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="keypad-grid" id="pinKeypad">
+            <button class="key-btn" data-key="1">1</button>
+            <button class="key-btn" data-key="2">2</button>
+            <button class="key-btn" data-key="3">3</button>
+            <button class="key-btn" data-key="4">4</button>
+            <button class="key-btn" data-key="5">5</button>
+            <button class="key-btn" data-key="6">6</button>
+            <button class="key-btn" data-key="7">7</button>
+            <button class="key-btn" data-key="8">8</button>
+            <button class="key-btn" data-key="9">9</button>
+            <button class="key-btn key-action" data-key="clear">CLR</button>
+            <button class="key-btn" data-key="0">0</button>
+            <button class="key-btn key-action" data-key="back">⌫</button>
+          </div>
+
+          <!-- 1-Hour Lockout Modal -->
+          <div id="lockoutOverlay" class="lockout-modal-overlay hidden">
+            <div class="lockout-card">
+              <div class="lockout-shield-glow">🔒</div>
+              <h3>ACCOUNT TEMPORARILY LOCKED</h3>
+              <p class="lockout-reason">
+                Maximum limit of <strong>5 failed MPIN attempts</strong> exceeded. To protect against brute-force attacks, transactions are suspended.
+              </p>
+              
+              <div class="lockout-countdown-box">
+                <span class="timer-label">SECURITY COOLDOWN REMAINING:</span>
+                <div class="timer-digits" id="lockoutTimerDisplay">59:59</div>
+              </div>
+
+              <div class="lockout-security-meta">
+                <span>Incident ID: <strong>INC-BRUTEFORCE-0x5A</strong></span>
+                <span>Trust Score: <strong class="red-text">14/100 (Quarantined)</strong></span>
+              </div>
+
+              <button id="btnUnlockDemoLockout" class="btn-primary btn-alert">
+                <span>Reset & Unlock Demo Session</span> 🔓
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYMENT PROCESSING ANIMATION OVERLAY -->
+        <div id="paymentProcessingOverlay" class="payment-processing-overlay hidden">
+          <div class="processing-content">
+            <div class="upi-switch-anim">
+              <div class="switch-orbit-outer"></div>
+              <div class="switch-orbit-inner"></div>
+              <div class="switch-core">
+                <span class="switch-bank-emblem">🏦</span>
+              </div>
+              <div class="switch-node node-axis">AXIS</div>
+              <div class="switch-node node-npci">NPCI</div>
+            </div>
+
+            <h3 class="processing-title" id="procTitle">Authorizing Payment...</h3>
+            <div class="processing-amount" id="procAmount">₹250.00</div>
+            <p class="processing-payee" id="procPayee">To Ramesh Tea Stall</p>
+
+            <div class="processing-stages-card">
+              <div class="proc-stage-item active" id="pStage1">
+                <div class="proc-stage-icon"><span class="spinner-dot"></span></div>
+                <div class="proc-stage-text">Connecting to NPCI UPI Core Switch</div>
+              </div>
+              <div class="proc-stage-item" id="pStage2">
+                <div class="proc-stage-icon">○</div>
+                <div class="proc-stage-text">Validating Zero-Trust Cryptographic Signature</div>
+              </div>
+              <div class="proc-stage-item" id="pStage3">
+                <div class="proc-stage-icon">○</div>
+                <div class="proc-stage-text">Debiting Axis Bank Account ··4821</div>
+              </div>
+              <div class="proc-stage-item" id="pStage4">
+                <div class="proc-stage-icon">○</div>
+                <div class="proc-stage-text">Confirming Settlement with Beneficiary</div>
+              </div>
+            </div>
+
+            <div class="proc-footer-note">
+              <span>🔒 Encrypted End-to-End · Hardware Keystore Authenticated</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5A: Normal Transaction Success Screen with SHARE RECEIPT -->
+        <div id="stepSuccess" class="app-step">
+          <div class="success-screen">
+            <div class="success-icon-anim">✓</div>
+            <h2>Payment Authorized</h2>
+            <div class="success-amount" id="receiptAmount">₹250.00</div>
+            <p class="success-to">Paid to <span id="receiptMerchant">Ramesh Tea Stall</span></p>
+
+            <div class="receipt-card">
+              <div class="receipt-row">
+                <span>Transaction ID</span>
+                <span class="mono-text" id="receiptTxId">TXN-89429184</span>
+              </div>
+              <div class="receipt-row">
+                <span>Debited From</span>
+                <span class="mono-text">Axis Bank ··4821</span>
+              </div>
+              <div class="receipt-row">
+                <span>Available Balance</span>
+                <span class="mono-text" id="receiptUpdatedBalance">₹48,000.00</span>
+              </div>
+              <div class="receipt-row">
+                <span>Intent Signature</span>
+                <span class="mono-text" id="receiptSig">Verified (ECDSA-P256)</span>
+              </div>
+              <div class="receipt-row">
+                <span>Final Trust Score</span>
+                <span class="score-tag green-tag" id="receiptScore">96 / 100</span>
+              </div>
+              <div class="receipt-row">
+                <span>Settlement Latency</span>
+                <span>412 ms</span>
+              </div>
+            </div>
+
+            <!-- Receipt Actions Row: Share & Return -->
+            <div class="success-actions-wrap">
+              <button id="btnShareReceipt" class="btn-secondary">
+                <span>Share Receipt</span> 📤
+              </button>
+              <button id="btnNewTxn" class="btn-primary">
+                <span>Return to Home</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5B: Silent Honeypot / Duress Emergency Screen -->
+        <div id="stepDuress" class="app-step">
+          <div class="duress-screen">
+            <div class="attacker-view-box">
+              <div class="fake-error-badge">⚠️ Bank Gateway Error</div>
+              <h3>HTTP 503 · Service Unavailable</h3>
+              <p>NPCI / Core Banking switch timeout. Transaction could not be completed.</p>
+              <div class="error-code">ERR_UPI_GATEWAY_TIMEOUT_0x99</div>
+              <p class="fake-hint">Please do not retry for 30 minutes. Account balance unchanged.</p>
+            </div>
+
+            <div class="honeypot-reality-box">
+              <div class="honeypot-badge">🚨 SILENT DURESS PROTOCOL ACTIVATED</div>
+              <ul>
+                <li>✓ Distress beacon dispatched to Cyber Security Incident Team</li>
+                <li>✓ Live GPS Coordinates broadcasted: 13.0827° N, 80.2707° E</li>
+                <li>✓ High-value account withdrawals frozen for 24h</li>
+                <li>✓ Decoy ledger record saved without alarming attacker</li>
+              </ul>
+            </div>
+
+            <button id="btnResetDuress" class="btn-primary btn-alert">Reset Emergency Simulation</button>
+          </div>
+        </div>
+
+        <!-- MODAL: SHARE RECEIPT SHEET (WhatsApp, Gmail, Messenger, Instagram, Copy) -->
+        <div id="shareSheetModal" class="share-sheet-overlay hidden">
+          <div class="share-sheet-card">
+            <div class="share-handle-bar"></div>
+            <div class="share-sheet-header">
+              <h4>Share Transaction Receipt</h4>
+              <button id="btnCloseShareSheet" class="btn-close-share">✕</button>
+            </div>
+            
+            <p class="share-summary-text" id="shareReceiptSummaryText">
+              ₹250.00 paid to Ramesh Tea Stall · Txn ID: TXN-89429184
+            </p>
+
+            <div class="share-options-grid">
+              <!-- WhatsApp -->
+              <button class="share-app-btn share-whatsapp" id="shareWhatsApp">
+                <div class="share-icon-wrap">💬</div>
+                <span>WhatsApp</span>
+              </button>
+
+              <!-- Gmail / Email -->
+              <button class="share-app-btn share-gmail" id="shareGmail">
+                <div class="share-icon-wrap">✉️</div>
+                <span>Gmail</span>
+              </button>
+
+              <!-- Messenger -->
+              <button class="share-app-btn share-messenger" id="shareMessenger">
+                <div class="share-icon-wrap">⚡</div>
+                <span>Messenger</span>
+              </button>
+
+              <!-- Instagram Direct -->
+              <button class="share-app-btn share-instagram" id="shareInstagram">
+                <div class="share-icon-wrap">📸</div>
+                <span>Instagram</span>
+              </button>
+
+              <!-- Copy Link / Text -->
+              <button class="share-app-btn share-copy" id="shareCopy">
+                <div class="share-icon-wrap">📋</div>
+                <span id="copyBtnLabel">Copy Text</span>
+              </button>
+            </div>
+
+            <div class="share-toast-msg hidden" id="shareToast">✓ Receipt copied to clipboard!</div>
+          </div>
+        </div>
+
+        <!-- Modal: Remote Shared QR Confirmation (Delegated Pay) -->
+        <div id="remotePayModal" class="modal-overlay hidden">
+          <div class="modal-card">
+            <div class="modal-badge">🖼️ Remote Gallery QR Detected</div>
+            <h3>Confirm Delegated Payment</h3>
+            <p>You uploaded a QR from photos. The merchant's shop is in <strong>Chennai</strong>, while you are in <strong>Mumbai</strong>.</p>
+            <div class="modal-merchant-card">
+              <div><strong>Merchant:</strong> Ramesh Tea Stall</div>
+              <div><strong>Location:</strong> T. Nagar, Chennai</div>
+              <div><strong>Risk Level:</strong> Low (Expected remote friend payment)</div>
+            </div>
+            <p class="modal-subtext">Are you paying remotely on behalf of a friend?</p>
+            <div class="modal-actions">
+              <button id="btnConfirmRemotePay" class="btn-modal-primary">Yes, Pay for Friend</button>
+              <button id="btnCancelRemotePay" class="btn-modal-cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL: THREAT INCIDENT ALERT POPUP (Interactive Cyber Attack Simulation) -->
+        <div id="threatAlertModal" class="modal-overlay hidden">
+          <div class="modal-card threat-alert-card" id="threatAlertCard">
+            <div class="threat-modal-top">
+              <div class="threat-alert-icon-wrap" id="threatAlertIcon">🚨</div>
+              <div class="threat-badge-pill" id="threatAlertBadge">CRITICAL SECURITY ALERT</div>
+            </div>
+
+            <h3 id="threatAlertTitle">Screen-Sharing / RAT Detected!</h3>
+            <p class="threat-alert-subtitle" id="threatAlertSub">Unauthorized Remote Framebuffer Scraper</p>
+
+            <div class="threat-alert-body" id="threatAlertDesc">
+              An unauthorized screen mirroring or remote access tool (e.g. AnyDesk, TeamViewer) is actively intercepting the device display. To prevent credential theft, sensitive banking operations are quarantined.
+            </div>
+
+            <div class="threat-param-box">
+              <div class="threat-param-row">
+                <span>Threat Vector:</span>
+                <strong id="threatParamVector">Accessibility Hook / Screen Scraper</strong>
+              </div>
+              <div class="threat-param-row">
+                <span>Trust Impact:</span>
+                <strong class="red-text" id="threatParamScore">Device Integrity: 0/25 (BLOCKED)</strong>
+              </div>
+              <div class="threat-param-row">
+                <span>Enclave Defense:</span>
+                <strong id="threatParamDefense">Secure Enclave Sealed · PIN Obscured</strong>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button id="btnNeutralizeThreat" class="btn-modal-primary btn-neutralize">
+                <span>Neutralize Attack & Restore</span> 🛡️
+              </button>
+              <button id="btnDismissThreatAlert" class="btn-modal-cancel">
+                Keep Active (Demo)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Threat Toast Banner -->
+        <div id="threatToast" class="threat-toast-banner hidden">
+          <span id="threatToastIcon">🛡️</span>
+          <span id="threatToastMsg">Threat state updated.</span>
+        </div>
+
+      </div>
+
+      <!-- PERSISTENT PHONE BOTTOM NAVIGATION BAR -->
+      <nav class="phone-bottom-nav">
+        <button class="nav-tab active-tab" data-nav="stepHome" id="navHome">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-tab" data-nav="stepScan" id="navScan">
+          <span class="nav-icon">📷</span>
+          <span class="nav-label">Scan</span>
+        </button>
+        <button class="nav-tab" data-nav="stepSecurity" id="navSecurity">
+          <span class="nav-icon">🛡️</span>
+          <span class="nav-label">Security</span>
+        </button>
+        <button class="nav-tab" data-nav="stepBalance" id="navBalance">
+          <span class="nav-icon">💳</span>
+          <span class="nav-label">Balance</span>
+        </button>
+      </nav>
+
+    </div>
+
+  </main>
+
+  <!-- Modular Scripts -->
+  <script src="trustEngine.js?v=2.2"></script>
+  <script src="app.js?v=2.2"></script>
+</body>
+</html>
